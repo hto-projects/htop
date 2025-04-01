@@ -12,11 +12,8 @@ const Hero = () => {
             Bootstrap library. It has been adapted to use TypeScript.
           </p>
           <div className="d-flex">
-            <Button variant="primary" href="/login" className="me-3">
-              Sign In
-            </Button>
-            <Button variant="secondary" href="/register">
-              Register
+            <Button variant="secondary" href="/create-project">
+              Create Project
             </Button>
           </div>
         </Card>

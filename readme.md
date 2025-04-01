@@ -1,5 +1,5 @@
-# MERN TS AUTH
-Basically just the typescript version of [Brad Traversy's thing](https://github.com/hylandtechoutreach/mern-auth-ts).
+# HOST
+We just want to host HTML CSS and JavaScript. how hard is that
 
 ## Usage
 - Create a MongoDB database and obtain your `MongoDB URI` - [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register)

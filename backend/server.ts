@@ -6,6 +6,8 @@ import connectDB from "./config/db";
 import cookieParser from "cookie-parser";
 import { notFound, errorHandler } from "./middleware/errorMiddleware";
 import userRoutes from "./routes/userRoutes";
+import projectRoutes from "./routes/projectRoutes";
+import { renderFile, renderProject } from "./controllers/projectController";
 
 const port = process.env.PORT || 5000;
 
@@ -29,10 +31,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use("/api/users", userRoutes);
+app.use("/api/projects", projectRoutes);
 
 app.get("/up-check", (_req, res: any) => {
   res.status(200).send("<h1>BACKEND OPERATION NORMAL</h1>").end();
 });
+
+app.get("/p/:projectId", renderProject);
+app.get("/pf/:projectId/:filename", renderFile);
+app.get("/pf/:projectId", renderFile);
 
 app.use(notFound);
 app.use(errorHandler);
