@@ -10,14 +10,24 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
         body: data
       })
     }),
-    renderProject: builder.query({
+    updateProject: builder.mutation({
+      query: (data) => ({
+        url: `${PROJECTS_URL}/update`,
+        method: "POST",
+        body: data
+      })
+    }),
+    getProject: builder.query({
       query: (projectId) => ({
-        url: `${PROJECTS_URL}/render/${projectId}`,
+        url: `${PROJECTS_URL}/get/${projectId}`,
         method: "GET"
       })
     })
   })
 });
 
-export const { useCreateProjectMutation, useRenderProjectQuery } =
-  projectsApiSlice;
+export const {
+  useCreateProjectMutation,
+  useUpdateProjectMutation,
+  useGetProjectQuery
+} = projectsApiSlice;

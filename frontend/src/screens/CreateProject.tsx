@@ -13,6 +13,8 @@ const CreateProjectScreen = () => {
   const [projectCss, setProjectCss] = useState("");
   const [projectJs, setProjectJs] = useState("");
 
+  const [createdProjectId, setCreatedProjectId] = useState("");
+
   const [createProject, { isLoading }] = useCreateProjectMutation();
 
   const submitHandler = async (e) => {
@@ -26,7 +28,7 @@ const CreateProjectScreen = () => {
         projectJs
       }).unwrap();
       toast.success(res.message);
-      console.log(res.projectId);
+      setCreatedProjectId(res.projectId);
     } catch (err) {
       toast.error(err?.data?.message || err.error);
     }
@@ -97,6 +99,11 @@ const CreateProjectScreen = () => {
         >
           Create Project
         </Button>
+        {createdProjectId ? (
+          <a href={`/edit-project/${createdProjectId}`}>Edit Project</a>
+        ) : (
+          ""
+        )}
       </Form>
 
       {isLoading && <Loader />}

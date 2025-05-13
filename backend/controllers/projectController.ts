@@ -36,6 +36,72 @@ const createProject = asyncHandler(async (req: any, res) => {
   }
 });
 
+const fileContentByName = (projectFiles: any[], fileName: string): string => {
+  const projectFile = projectFiles.find((f) => f.fileName === fileName);
+  if (projectFile) {
+    return projectFile.fileContent;
+  } else {
+    return null;
+  }
+};
+
+// @desc    Update an existing project
+// @route   POST /api/projects/update
+// @access  NOT Public
+const updateProject = asyncHandler(async (req: any, res) => {
+  const { projectId, projectFiles } = req.body;
+  console.log(projectFiles);
+  const newHtml = fileContentByName(projectFiles, "index.html");
+  console.log(newHtml);
+  const newCss = fileContentByName(projectFiles, "style.css");
+  const newJs = fileContentByName(projectFiles, "script.js");
+
+  const findProj = { projectId: projectId };
+  const updates: any = {};
+
+  if (newHtml) {
+    updates.projectHtml = newHtml;
+  }
+
+  if (newCss) {
+    updates.projectCss = newCss;
+  }
+
+  if (newJs) {
+    updates.projectJs = newJs;
+  }
+
+  try {
+    await Project.findOneAndUpdate(findProj, updates);
+    res.status(201).json({
+      message: `Project ${projectId} updated!`,
+      newHtml: newHtml,
+      newCss: newCss,
+      newJs: newJs
+    });
+  } catch (error) {
+    res.status(400);
+    throw new Error(`Error updating project: ${error}`);
+  }
+});
+
+// @desc    Get a project
+// @route   GET /get/:projectId
+// @access  Public
+const getProject = asyncHandler(async (req: any, res) => {
+  const projectId = req.params.projectId;
+  let project;
+
+  try {
+    project = await Project.findOne({ projectId: projectId });
+  } catch (e) {
+    res.status(400);
+    throw new Error(":( project not found :(");
+  }
+
+  res.send(project);
+});
+
 // @desc    Render a project file
 // @route   GET /pf/:projectId/:filename
 // @access  Public
@@ -105,4 +171,4 @@ ${project.projectHtml}
   res.send(htmlString);
 });
 
-export { createProject, renderProject, renderFile };
+export { createProject, updateProject, getProject, renderProject, renderFile };

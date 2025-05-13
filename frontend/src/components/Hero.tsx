@@ -1,6 +1,19 @@
 import { Container, Card, Button } from "react-bootstrap";
+import Editor from "react-simple-code-editor";
+import { highlight, languages } from "prismjs/components/prism-core";
+import "prismjs/components/prism-clike";
+import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-css";
+import "prismjs/components/prism-markup";
+import "prismjs/themes/prism.css";
+import { useState } from "react";
 
 const Hero = () => {
+  const onFileEdited = (newContent: string) => {
+    console.log("File content changed:", newContent);
+  };
+
+  const [fileContent, setFileContent] = useState<string>("<h1>hi</h1>");
   return (
     <div className=" py-5">
       <Container className="d-flex justify-content-center">
@@ -18,6 +31,17 @@ const Hero = () => {
           </div>
         </Card>
       </Container>
+      <div
+        style={{ width: "200px", height: "300px", border: "1px solid black" }}
+      >
+        <Editor
+          style={{ width: "100%", height: "100%", fontFamily: "monospace" }}
+          highlight={(code) => highlight(code, languages.html)}
+          onValueChange={setFileContent}
+          value={fileContent}
+          padding={10}
+        ></Editor>
+      </div>
     </div>
   );
 };

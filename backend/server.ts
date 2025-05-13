@@ -37,6 +37,11 @@ app.get("/up-check", (_req, res: any) => {
   res.status(200).send("<h1>BACKEND OPERATION NORMAL</h1>").end();
 });
 
+app.get("*", (_req, res, next) => {
+  console.log("Request URL:", _req.url);
+  return next();
+});
+
 app.get("/p/:projectId", renderProject);
 app.get("/pf/:projectId/:filename", renderFile);
 app.get("/pf/:projectId", renderFile);
