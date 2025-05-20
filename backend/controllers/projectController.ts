@@ -107,7 +107,7 @@ const getProject = asyncHandler(async (req: any, res) => {
 // @access  Public
 const renderFile = asyncHandler(async (req: any, res) => {
   const projectId = req.params.projectId;
-  const filename = req.params.filename || "index.html";
+  let filename = req.params.filename;
 
   let project;
 
@@ -116,6 +116,15 @@ const renderFile = asyncHandler(async (req: any, res) => {
   } catch (e) {
     res.status(400);
     throw new Error(":( project not found :(");
+  }
+
+  if (!filename) {
+    if (req.originalUrl.endsWith("/")) {
+      filename = "index.html";
+    } else {
+      res.redirect(req.originalUrl + "/");
+      return;
+    }
   }
 
   if (filename === "index.html") {

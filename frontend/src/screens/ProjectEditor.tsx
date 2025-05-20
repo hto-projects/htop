@@ -6,7 +6,6 @@ import { useParams } from "react-router-dom";
 import { useGetProjectQuery } from "../slices/projectsApiSlice";
 import { useUpdateProjectMutation } from "../slices/projectsApiSlice";
 import Loader from "../components/Loader";
-import { current } from "@reduxjs/toolkit";
 
 interface ProjectFile {
   fileName: string;

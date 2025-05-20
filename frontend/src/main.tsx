@@ -14,14 +14,12 @@ import HomeScreen from "./screens/HomeScreen.jsx";
 import ProfileScreen from "./screens/ProfileScreen.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import CreateProjectScreen from "./screens/CreateProject";
-import RenderProjectScreen from "./screens/RenderProject";
 import ProjectEditor from "./screens/ProjectEditor";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
       <Route path="/create-project" element={<CreateProjectScreen />} />
-      <Route path="/p/:projectId" element={<RenderProjectScreen />} />
       <Route path="/edit-project/:projectId" element={<ProjectEditor />} />
       <Route index={true} path="/" element={<HomeScreen />} />
       <Route path="" element={<PrivateRoute />}>
