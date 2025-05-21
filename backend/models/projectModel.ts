@@ -4,16 +4,16 @@ const projectSchema = new mongoose.Schema(
   {
     projectName: {
       type: String,
-      required: false,
+      required: true,
       unique: true
     },
     projectDescription: {
       type: String,
       required: false
     },
-    userId: {
+    projectOwnerId: {
       type: String,
-      required: false
+      required: true
     },
     projectId: {
       type: String,

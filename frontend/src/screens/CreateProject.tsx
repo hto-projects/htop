@@ -1,19 +1,35 @@
 import { useState } from "react";
 import { Form, Button } from "react-bootstrap";
-import FormContainer from "../components/FormContainer";
 import { toast } from "react-toastify";
 import Loader from "../components/Loader";
 import { useCreateProjectMutation } from "../slices/projectsApiSlice";
 
 const CreateProjectScreen = () => {
-  console.log("CreateProjectScreen");
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
-  const [projectHtml, setProjectHtml] = useState("");
-  const [projectCss, setProjectCss] = useState("");
-  const [projectJs, setProjectJs] = useState("");
+  const [projectHtml, setProjectHtml] = useState(
+    `<html>
+  <head>
+    <link href='style.css' rel='stylesheet'>
+  </head>
+  <body>
+    <h1>My Site</h1>
+    <button onclick='runThis()'>Run</button>
+    <script src='script.js'></script>
+  </body>
+</html>`
+  );
 
-  const [createdProjectId, setCreatedProjectId] = useState("");
+  const [projectCss, setProjectCss] = useState(`body {
+    background: white;
+}`);
+  const [projectJs, setProjectJs] = useState(
+    `function runThis() {
+  alert('Running');
+}`
+  );
+
+  const [createdProjectName, setCreatedProjectName] = useState("");
 
   const [createProject, { isLoading }] = useCreateProjectMutation();
 
@@ -28,7 +44,7 @@ const CreateProjectScreen = () => {
         projectJs
       }).unwrap();
       toast.success(res.message);
-      setCreatedProjectId(res.projectId);
+      setCreatedProjectName(res.projectName);
     } catch (err) {
       toast.error(err?.data?.message || err.error);
     }
@@ -99,8 +115,8 @@ const CreateProjectScreen = () => {
         >
           Create Project
         </Button>
-        {createdProjectId ? (
-          <a href={`/edit-project/${createdProjectId}`}>Edit Project</a>
+        {createdProjectName ? (
+          <a href={`/e/${createdProjectName}`}>Edit Project</a>
         ) : (
           ""
         )}

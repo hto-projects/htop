@@ -2,13 +2,18 @@ import express from "express";
 import {
   createProject,
   updateProject,
-  getProject
+  copyProject,
+  getProject,
+  checkOwnership
 } from "../controllers/projectController";
+import { protectAllowAnon } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
 router.post("/create", createProject);
-router.post("/update", updateProject);
-router.get("/get/:projectId", getProject);
+router.post("/update", protectAllowAnon, updateProject);
+router.post("/copy", copyProject);
+router.get("/get/:projectName", getProject);
+router.get("/check-ownership/:projectName", protectAllowAnon, checkOwnership);
 
 export default router;

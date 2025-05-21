@@ -17,9 +17,22 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
         body: data
       })
     }),
+    copyProject: builder.mutation({
+      query: (data) => ({
+        url: `${PROJECTS_URL}/copy`,
+        method: "POST",
+        body: data
+      })
+    }),
     getProject: builder.query({
-      query: (projectId) => ({
-        url: `${PROJECTS_URL}/get/${projectId}`,
+      query: (projectName) => ({
+        url: `${PROJECTS_URL}/get/${projectName}`,
+        method: "GET"
+      })
+    }),
+    checkOwnership: builder.query({
+      query: (projectName) => ({
+        url: `${PROJECTS_URL}/check-ownership/${projectName}`,
         method: "GET"
       })
     })
@@ -29,5 +42,7 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
 export const {
   useCreateProjectMutation,
   useUpdateProjectMutation,
-  useGetProjectQuery
+  useCopyProjectMutation,
+  useGetProjectQuery,
+  useCheckOwnershipQuery
 } = projectsApiSlice;

@@ -25,4 +25,26 @@ const protect = asyncHandler(async (req: any, res, next) => {
   }
 });
 
-export { protect };
+const protectAllowAnon = asyncHandler(async (req: any, res, next) => {
+  let token;
+
+  token = req.cookies.jwt;
+
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      req.user = { _id: decoded.userId };
+
+      next();
+    } catch (error) {
+      console.error(error);
+      res.status(401);
+      throw new Error("Not authorized, token failed");
+    }
+  } else {
+    next();
+  }
+});
+
+export { protect, protectAllowAnon };

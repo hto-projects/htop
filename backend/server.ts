@@ -7,7 +7,7 @@ import cookieParser from "cookie-parser";
 import { notFound, errorHandler } from "./middleware/errorMiddleware";
 import userRoutes from "./routes/userRoutes";
 import projectRoutes from "./routes/projectRoutes";
-import { renderFile, renderProject } from "./controllers/projectController";
+import { renderFile } from "./controllers/projectController";
 
 const port = process.env.PORT || 5000;
 
@@ -42,9 +42,8 @@ app.get("*", (_req, res, next) => {
   return next();
 });
 
-app.get("/p/:projectId", renderProject);
-app.get("/pf/:projectId/:filename", renderFile);
-app.get("/pf/:projectId", renderFile);
+app.get("/pf/:projectName/:filename", renderFile);
+app.get("/pf/:projectName", renderFile);
 
 app.use(notFound);
 app.use(errorHandler);
