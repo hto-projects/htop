@@ -7,27 +7,6 @@ import { useCreateProjectMutation } from "../slices/projectsApiSlice";
 const CreateProjectScreen = () => {
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
-  const [projectHtml, setProjectHtml] = useState(
-    `<html>
-  <head>
-    <link href='style.css' rel='stylesheet'>
-  </head>
-  <body>
-    <h1>My Site</h1>
-    <button onclick='runThis()'>Run</button>
-    <script src='script.js'></script>
-  </body>
-</html>`
-  );
-
-  const [projectCss, setProjectCss] = useState(`body {
-    background: white;
-}`);
-  const [projectJs, setProjectJs] = useState(
-    `function runThis() {
-  alert('Running');
-}`
-  );
 
   const [createdProjectName, setCreatedProjectName] = useState("");
 
@@ -38,10 +17,7 @@ const CreateProjectScreen = () => {
     try {
       const res = await createProject({
         projectName,
-        projectDescription,
-        projectHtml,
-        projectCss,
-        projectJs
+        projectDescription
       }).unwrap();
       toast.success(res.message);
       setCreatedProjectName(res.projectName);
@@ -71,39 +47,6 @@ const CreateProjectScreen = () => {
             placeholder="Enter projectDescription"
             value={projectDescription}
             onChange={(e) => setProjectDescription(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-
-        <Form.Group className="my-2" controlId="projectHtml">
-          <Form.Label>HTML</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={10}
-            placeholder="Enter projectHtml"
-            value={projectHtml}
-            onChange={(e) => setProjectHtml(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-
-        <Form.Group className="my-2" controlId="projectCss">
-          <Form.Label>CSS</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={10}
-            placeholder="Enter projectCss"
-            value={projectCss}
-            onChange={(e) => setProjectCss(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-
-        <Form.Group className="my-2" controlId="projectJs">
-          <Form.Label>Js</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={10}
-            placeholder="Enter projectJs"
-            value={projectJs}
-            onChange={(e) => setProjectJs(e.target.value)}
           ></Form.Control>
         </Form.Group>
 

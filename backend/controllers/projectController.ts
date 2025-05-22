@@ -2,6 +2,67 @@ import asyncHandler from "express-async-handler";
 import Project from "../models/projectModel";
 import { v4 as uuidv4 } from "uuid";
 import generateToken from "../utils/generateToken";
+import fs from "fs";
+import { IProject, IProjectFile } from "../../shared/types";
+
+const findProject = async (projectName: string): Promise<IProject> => {
+  let starterExists: boolean = false;
+  try {
+    await fs.promises.access(
+      `./backend/starters/${projectName}`,
+      fs.constants.R_OK
+    );
+    starterExists = true;
+  } catch (e) {
+    starterExists = false;
+  }
+
+  if (starterExists) {
+    try {
+      const fileNames: string[] = await fs.promises.readdir(
+        `./backend/starters/${projectName}`
+      );
+      const projectFiles: IProjectFile[] = [];
+      for (const fileName of fileNames) {
+        const fileContent: string = await fs.promises.readFile(
+          `./backend/starters/${projectName}/${fileName}`,
+          "utf-8"
+        );
+        projectFiles.push({
+          fileName: fileName,
+          fileContent: fileContent
+        });
+      }
+
+      const starterProject: IProject = {
+        projectName: projectName,
+        projectDescription: "Starter project",
+        projectFiles: projectFiles,
+        projectId: projectName,
+        projectStatus: "frozen",
+        projectOwnerId: "0"
+      };
+
+      return starterProject;
+    } catch (e) {
+      throw new Error(
+        `:( project with name ${projectName} could not be found in starter projects :(`
+      );
+    }
+  } else {
+    try {
+      const existingProject: IProject = await Project.findOne({
+        projectName: projectName
+      });
+
+      return existingProject;
+    } catch (e) {
+      throw new Error(
+        `:( project with name ${projectName} could not be found in the database :(`
+      );
+    }
+  }
+};
 
 const getUserId = (req, res) => {
   const user = req.user;
@@ -22,26 +83,42 @@ const getUserId = (req, res) => {
 const createProject = asyncHandler(async (req: any, res) => {
   const userId = getUserId(req, res);
 
-  const {
+  const { projectName, projectDescription } = req.body;
+
+  const foundProject: IProject = await findProject(projectName);
+  if (foundProject) {
+    res.status(400);
+    throw new Error(`:( project with name ${projectName} already exists :(`);
+  }
+
+  const newProjectId: string = uuidv4();
+
+  const starterProjectFiles: IProjectFile[] = [
+    {
+      fileName: "index.html",
+      fileContent: `<h1>Hello World</h1>`
+    },
+    {
+      fileName: "style.css",
+      fileContent: `body { font-family: Arial, sans-serif; }`
+    },
+    {
+      fileName: "script.js",
+      fileContent: `console.log('Hello World');`
+    }
+  ];
+
+  const projectToCreate: IProject = {
     projectName,
     projectDescription,
-    projectHtml,
-    projectCss,
-    projectJs
-  } = req.body;
-
-  const newProjectId = uuidv4();
+    projectFiles: starterProjectFiles,
+    projectId: newProjectId,
+    projectOwnerId: userId,
+    projectStatus: "public"
+  };
 
   try {
-    await Project.create({
-      projectName,
-      projectDescription,
-      projectHtml,
-      projectCss,
-      projectJs,
-      projectId: newProjectId,
-      projectOwnerId: userId
-    });
+    await Project.create(projectToCreate);
 
     res.status(201).json({
       message: `Project "${projectName}" created!`,
@@ -77,9 +154,9 @@ const generateNewProjectName = async (
     throw new Error("Too many attempts to generate a new project name");
   }
 
-  const randomSuffix = Math.floor(Math.random() * mult);
-  const newName = `${projectName}${randomSuffix}`;
-  const existingProject = await Project.findOne({ projectName: newName });
+  const randomSuffix: number = Math.floor(Math.random() * mult);
+  const newName: string = `${projectName}${randomSuffix}`;
+  const existingProject: IProject = await findProject(newName);
   if (existingProject) {
     return generateNewProjectName(projectName, count + 1);
   } else {
@@ -94,18 +171,18 @@ const copyProject = asyncHandler(async (req: any, res) => {
   const userId = getUserId(req, res);
 
   const { projectName } = req.body;
-  let existingProject;
+  let existingProject: IProject;
 
   try {
-    existingProject = await Project.findOne({ projectName: projectName });
+    existingProject = await findProject(projectName);
   } catch (e) {
     res.status(400);
     throw new Error(":( project not found :(");
   }
 
-  const newProjectId = uuidv4();
+  const newProjectId: string = uuidv4();
 
-  let newProjectName;
+  let newProjectName: string;
 
   try {
     newProjectName = await generateNewProjectName(
@@ -117,15 +194,16 @@ const copyProject = asyncHandler(async (req: any, res) => {
   }
 
   try {
-    const createdProject = await Project.create({
+    const newProjectToCreate: IProject = {
       projectName: newProjectName,
       projectOwnerId: userId,
       projectDescription: existingProject.projectDescription,
-      projectHtml: existingProject.projectHtml,
-      projectCss: existingProject.projectCss,
-      projectJs: existingProject.projectJs,
+      projectFiles: existingProject.projectFiles,
+      projectStatus: "public",
       projectId: newProjectId
-    });
+    };
+
+    const createdProject = await Project.create(newProjectToCreate);
 
     res.status(201).json({
       message: `Project "${createdProject.projectName}" created!`,
@@ -139,24 +217,14 @@ const copyProject = asyncHandler(async (req: any, res) => {
   }
 });
 
-const fileContentByName = (projectFiles: any[], fileName: string): string => {
-  const projectFile = projectFiles.find((f) => f.fileName === fileName);
-  if (projectFile) {
-    return projectFile.fileContent;
-  } else {
-    return null;
-  }
-};
-
 // @desc    Check if the current user owns this project
 // @route   POST /api/projects/check-ownership/:projectName
 // @access  NOT Public
 const checkOwnership = asyncHandler(async (req: any, res) => {
   const user = req.user;
-  const projectName = req.params.projectName;
+  const projectName: string = req.params.projectName;
 
-  const findProj = { projectName: projectName };
-  const existingProject = await Project.findOne(findProj);
+  const existingProject: IProject = await findProject(projectName);
   if (!existingProject) {
     res.status(400);
     throw new Error(":( project not found :(");
@@ -174,13 +242,10 @@ const checkOwnership = asyncHandler(async (req: any, res) => {
 // @access  NOT Public
 const updateProject = asyncHandler(async (req: any, res) => {
   const user = req.user;
-  const { projectName, projectFiles } = req.body;
-  const newHtml = fileContentByName(projectFiles, "index.html");
-  const newCss = fileContentByName(projectFiles, "style.css");
-  const newJs = fileContentByName(projectFiles, "script.js");
+  const projectName: string = req.body.projectName;
+  const projectFiles: IProjectFile[] = req.body.projectFiles;
 
-  const findProj = { projectName: projectName };
-  const existingProject = await Project.findOne(findProj);
+  const existingProject = await findProject(projectName);
   if (!existingProject) {
     res.status(400);
     throw new Error(":( project not found :(");
@@ -191,27 +256,13 @@ const updateProject = asyncHandler(async (req: any, res) => {
     throw new Error("Not authorized to update this project");
   }
 
-  const updates: any = {};
-
-  if (newHtml) {
-    updates.projectHtml = newHtml;
-  }
-
-  if (newCss) {
-    updates.projectCss = newCss;
-  }
-
-  if (newJs) {
-    updates.projectJs = newJs;
-  }
+  const updates: any = { projectFiles: projectFiles };
+  const findProj: any = { projectName: projectName };
 
   try {
     await Project.findOneAndUpdate(findProj, updates);
     res.status(201).json({
-      message: `Project ${projectName} updated!`,
-      newHtml: newHtml,
-      newCss: newCss,
-      newJs: newJs
+      message: `Project ${projectName} updated!`
     });
   } catch (error) {
     res.status(400);
@@ -223,11 +274,11 @@ const updateProject = asyncHandler(async (req: any, res) => {
 // @route   GET /get/:projectId
 // @access  Public
 const getProject = asyncHandler(async (req: any, res) => {
-  const projectName = req.params.projectName;
-  let project;
+  const projectName: string = req.params.projectName;
+  let project: IProject;
 
   try {
-    project = await Project.findOne({ projectName: projectName });
+    project = await findProject(projectName);
   } catch (e) {
     res.status(400);
     throw new Error(":( project not found :(");
@@ -240,44 +291,49 @@ const getProject = asyncHandler(async (req: any, res) => {
 // @route   GET /pf/:projectName/:filename
 // @access  Public
 const renderFile = asyncHandler(async (req: any, res) => {
-  const projectName = req.params.projectName;
-  let filename = req.params.filename;
+  const projectName: string = req.params.projectName;
+  let fileName: string = req.params.filename;
 
-  let project;
+  let project: IProject;
 
   try {
-    project = await Project.findOne({ projectName: projectName });
+    project = await findProject(projectName);
   } catch (e) {
     res.status(400);
     throw new Error(":( project not found :(");
   }
 
-  if (!filename) {
+  if (!fileName) {
     if (req.originalUrl.endsWith("/")) {
-      filename = "index.html";
+      fileName = "index.html";
     } else {
       res.redirect(req.originalUrl + "/");
       return;
     }
   }
 
-  if (filename === "index.html") {
+  const projectFile: IProjectFile | undefined = project.projectFiles.find(
+    (file: IProjectFile) => file.fileName === fileName
+  );
+
+  if (!projectFile) {
+    res.status(404);
+    throw new Error(":( file not found :(");
+  }
+
+  if (fileName.endsWith(".html")) {
     res.setHeader("Content-Type", "text/html");
-    res.send(project.projectHtml);
-    return;
   }
 
-  if (filename === "style.css") {
-    res.setHeader("Content-Type", "text/css");
-    res.send(project.projectCss);
-    return;
-  }
-
-  if (filename === "script.js") {
+  if (fileName.endsWith(".js")) {
     res.setHeader("Content-Type", "text/javascript");
-    res.send(project.projectJs);
-    return;
   }
+
+  if (fileName.endsWith(".css")) {
+    res.setHeader("Content-Type", "text/css");
+  }
+
+  res.send(projectFile.fileContent);
 });
 
 export {

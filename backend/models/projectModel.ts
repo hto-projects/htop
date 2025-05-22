@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { IProject } from "../../shared/types";
 
 const projectSchema = new mongoose.Schema(
   {
@@ -22,27 +23,27 @@ const projectSchema = new mongoose.Schema(
     projectStatus: {
       type: String,
       required: true,
-      enum: ["public", "private", "deleted"],
+      enum: ["public", "private", "deleted", "frozen"],
       default: "public"
     },
-    projectHtml: {
-      type: String,
-      required: false
-    },
-    projectCss: {
-      type: String,
-      required: false
-    },
-    projectJs: {
-      type: String,
-      required: false
-    }
+    projectFiles: [
+      {
+        fileName: {
+          type: String,
+          required: true
+        },
+        fileContent: {
+          type: String,
+          required: true
+        }
+      }
+    ]
   },
   {
     timestamps: true
   }
 );
 
-const Project = mongoose.model("Project", projectSchema);
+const Project = mongoose.model<IProject>("Project", projectSchema);
 
 export default Project;

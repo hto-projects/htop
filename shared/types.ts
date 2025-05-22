@@ -5,5 +5,9 @@ export interface IProjectFile {
 
 export interface IProject {
   projectName: string;
+  projectDescription: string;
+  projectOwnerId: string;
+  projectId: string;
+  projectStatus: string;
   projectFiles: IProjectFile[];
 }

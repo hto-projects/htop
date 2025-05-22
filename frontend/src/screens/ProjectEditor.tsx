@@ -9,6 +9,7 @@ import {
 } from "../slices/projectsApiSlice";
 import { useUpdateProjectMutation } from "../slices/projectsApiSlice";
 import Loader from "../components/Loader";
+import { IProject } from "../../../shared/types";
 
 interface ProjectFile {
   fileName: string;
@@ -53,20 +54,9 @@ const ProjectEditor = () => {
   React.useEffect(() => {
     if (!projectData || !projectData.data) return;
 
-    setProjectFiles([
-      {
-        fileName: "index.html",
-        fileContent: projectData.data.projectHtml
-      },
-      {
-        fileName: "style.css",
-        fileContent: projectData.data.projectCss
-      },
-      {
-        fileName: "script.js",
-        fileContent: projectData.data.projectJs
-      }
-    ]);
+    const data: IProject = projectData.data;
+
+    setProjectFiles(data.projectFiles);
   }, [projectData]);
 
   const fileSelection = (filename: string) => {
